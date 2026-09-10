@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Stores | MyStore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-logo">
+            MyStore
+        </div>
+        <a href="index.html" class="back-home">← Back to Home</a>
+    </nav>
+
+    <!-- Directory Section -->
+    <section id="directory">
+
+        <p class="section-label">BROWSE STORES</p>
+        <h2>Discover Businesses on MyStore</h2>
+        <p class="section-description">
+            Explore stores created by sellers just like you.
+        </p>
+
+                <div style="max-width: 500px; margin: 0 auto 30px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <input
+                type="text"
+                id="searchBusinessName"
+                placeholder="Search by business name..."
+                style="flex: 1; min-width: 200px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box;"
+            >
+            <select id="filterProductType">
+                <option value="">All Categories</option>
+                <option value="Physical Product">Physical Product</option>
+                <option value="Digital Product">Digital Product</option>
+                <option value="Service">Service</option>
+                <option value="Appointment">Appointment</option>
+            </select>
+        </div>
+
+        <div id="directoryLoading">
+            <p>Loading stores...</p>
+        </div>
+
+        <div id="directoryEmpty" style="display: none;">
+            <p>No stores found.</p>
+        </div>
+
+        <div id="directoryList" class="who-container"></div>
+
+    </section>
+
+    <!-- Supabase library + our connection file -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="directory.js"></script>
+</body>
+
+</html>

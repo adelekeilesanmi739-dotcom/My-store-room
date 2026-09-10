@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In | MyStore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-logo">
+            MyStore
+        </div>
+        <a href="index.html" class="back-home">← Back to Home</a>
+    </nav>
+
+    <!-- Log In Section -->
+    <section id="login" class="auth-section">
+
+        <h2>Welcome Back</h2>
+
+        <p class="section-description">
+            Log in to access your dashboard.
+        </p>
+
+        <form id="loginForm">
+
+            <input
+                type="email"
+                id="loginEmail"
+                placeholder="Your Email"
+                required
+            >
+
+            <input
+                type="password"
+                id="loginPassword"
+                placeholder="Your Password"
+                required
+            >
+
+            <button type="submit">
+                Log In
+            </button>
+
+        </form>
+
+        <p id="loginMessage"></p>
+
+        <p class="auth-switch">
+            Don't have an account? <a href="signup.html">Sign Up</a>
+        </p>
+
+    </section>
+
+    <!-- Supabase library + our connection file -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+</body>
+
+</html>

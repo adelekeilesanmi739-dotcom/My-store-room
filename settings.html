@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings | MyStore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-logo">
+            MyStore
+        </div>
+        <a href="dashboard.html" class="back-home">← Back to Dashboard</a>
+    </nav>
+
+    <!-- Settings Section -->
+    <section id="settings" class="auth-section">
+
+        <h2>Account Settings</h2>
+
+        <h3>Change Email</h3>
+        <form id="emailForm">
+            <input
+                type="email"
+                id="newEmail"
+                placeholder="New Email Address"
+                required
+            >
+            <button type="submit">Update Email</button>
+        </form>
+        <p id="emailMessage"></p>
+
+        <h3 style="margin-top: 30px;">Change Password</h3>
+        <form id="passwordForm">
+            <input
+                type="password"
+                id="newPassword"
+                placeholder="New Password"
+                required
+                minlength="6"
+            >
+            <button type="submit">Update Password</button>
+        </form>
+        <p id="passwordMessage"></p>
+
+        <h3 style="margin-top: 30px; color: #c0392b;">Danger Zone</h3>
+        <p class="section-description" style="margin-left: 0; text-align: left;">
+            Deleting your account permanently removes your profile, products,
+            messages, and storefront. This cannot be undone.
+        </p>
+        <button id="deleteAccountButton" style="background-color: #c0392b;">
+            Delete My Account
+        </button>
+        <p id="deleteMessage"></p>
+
+    </section>
+
+    <!-- Supabase library + our connection file -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="settings.js"></script>
+</body>
+
+</html>

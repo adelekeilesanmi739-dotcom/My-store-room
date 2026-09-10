@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store | MyStore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-logo">
+            MyStore
+        </div>
+        <a href="index.html" class="back-home">← Back to Home</a>
+    </nav>
+
+    <!-- Store Section -->
+    <section id="store" class="auth-section">
+
+        <div id="storeLoading">
+            <p>Loading store...</p>
+        </div>
+
+        <div id="storeNotFound" style="display: none;">
+            <h2>Store Not Found</h2>
+            <p class="section-description">
+                We couldn't find a store at this link. It may not exist,
+                or the owner hasn't published it yet.
+            </p>
+        </div>
+
+                     <div id="storeContent" style="display: none;">
+            <p class="section-label" id="storeProductType"></p>
+            <h2 id="storeBusinessName"></h2>
+            <p class="section-description" id="storeBusinessDescription"></p>
+
+            <div id="storeProducts"></div>
+
+            <div style="margin-top: 40px; text-align: left;">
+                            <div style="margin-top: 40px; text-align: left;">
+                <h3>Chat With This Business</h3>
+
+                <div id="chatStart">
+                    <input
+                        type="text"
+                        id="chatVisitorName"
+                        placeholder="Your Name"
+                    >
+                    <button id="startChatButton">Start Chat</button>
+                </div>
+
+                <div id="chatWindow" style="display: none;">
+                    <div id="chatMessages" style="max-height: 300px; overflow-y: auto; background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 10px;"></div>
+
+                    <form id="chatForm" style="display: flex; gap: 10px;">
+                        <input
+                            type="text"
+                            id="chatMessageInput"
+                            placeholder="Type a message..."
+                            required
+                            style="flex: 1;"
+                        >
+                        <button type="submit">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    <!-- Supabase library + our connection file -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="store.js"></script>
+</body>
+
+</html>

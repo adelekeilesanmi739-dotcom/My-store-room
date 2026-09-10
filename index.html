@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyStore | Sell Smarter, Grow Faster</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Navigation -->
+<nav>
+
+    <div class="nav-logo">
+        MyStore
+    </div>
+
+    <button class="menu-button" onclick="toggleMenu()">
+        ☰
+    </button>
+                <div class="nav-links" id="navLinks">
+            <a href="#home">Home</a>
+            <a href="#who">Who It's For</a>
+            <a href="#features">Features</a>
+            <a href="#contact">Contact</a>
+            <a href="directory.html">Browse Stores</a>
+            <a href="login.html" id="navLoginLink">Log In</a>
+            <a href="signup.html" id="navSignupLink">Sign Up</a>
+            <a href="dashboard.html" id="navDashboardLink" style="display: none;">Dashboard</a>
+        </div>
+
+</nav>
+
+<!-- Hero Section -->
+<section id="home" class="hero">
+
+    <div class="hero-content">
+
+        <div class="hero-text">
+
+            <p class="hero-small-text">
+                Built for small businesses 🚀
+            </p>
+
+            <h1>
+                Sell Smarter, <span>Grow Faster</span>
+            </h1>
+
+            <p class="hero-description">
+                MyStore helps you capture leads, manage customers,
+                and turn one-time buyers into loyal, returning customers —
+                all from one simple dashboard.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="#contact" class="primary-button">
+                    Get Started
+                </a>
+                <a href="#features" class="secondary-button">
+                    See Features
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Who It's For Section -->
+<section id="who">
+
+    <p class="section-label">WHO IT'S FOR</p>
+
+    <h2>Built For Every Kind of Seller</h2>
+
+    <p class="section-description">
+        Whether you sell products, services, or your own time,
+        MyStore adapts to how you do business.
+    </p>
+
+    <div class="who-container">
+
+        <div class="who-card">
+            <div class="who-icon">📦</div>
+            <h3>Product Sellers</h3>
+            <p>
+                Sell physical or digital products and manage
+                orders in one place.
+            </p>
+        </div>
+
+        <div class="who-card">
+            <div class="who-icon">💼</div>
+            <h3>Service Providers</h3>
+            <p>
+                Offer your time, expertise, or custom work,
+                and get paid without the back-and-forth.
+            </p>
+        </div>
+
+        <div class="who-card">
+            <div class="who-icon">📅</div>
+            <h3>Appointment-Based</h3>
+            <p>
+                Let customers book a date and time directly,
+                with automatic reminders.
+            </p>
+        </div>
+
+        <div class="who-card">
+            <div class="who-icon">🎓</div>
+            <h3>Course Creators</h3>
+            <p>
+                Sell lessons, track learner progress, and
+                grow a community around your content.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Features Section -->
+<section id="features">
+
+    <p class="section-label">FEATURES</p>
+
+    <h2>Everything You Need to Sell</h2>
+
+    <p class="section-description">
+        No plugins, no complicated setup — just the tools
+        you need to run your business.
+    </p>
+
+    <div class="features-container">
+
+        <div class="feature-card">
+            <div class="feature-icon">🛒</div>
+            <h3>Simple Storefront</h3>
+            <p>
+                Set up a clean, ready-to-share page for your
+                products or services in minutes.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">👥</div>
+            <h3>Customer Management</h3>
+            <p>
+                Keep track of every customer and their order
+                history in one dashboard.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🔁</div>
+            <h3>Repeat Business Tools</h3>
+            <p>
+                Turn one-time buyers into loyal customers with
+                built-in follow-up reminders.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Simple Analytics</h3>
+            <p>
+                See what's selling and who's buying, without
+                digging through spreadsheets.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Contact Section -->
+<section id="contact">
+
+    <h2>Ready to Get Started?</h2>
+
+    <p>
+        Tell us a bit about your business and we'll get you set up.
+    </p>
+
+    <!-- Contact Form -->
+    <form id="contactForm">
+
+        <input
+            type="text"
+            id="name"
+            placeholder="Your Name"
+            required
+        >
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Your Email or phone number"
+            required
+        >
+
+        <textarea
+            id="message"
+            placeholder="Tell us about your business"
+            required
+        ></textarea>
+
+        <button type="submit">
+            Send Message
+        </button>
+
+    </form>
+
+    <p id="formMessage"></p>
+
+</section>
+
+<!-- Back To Top Button -->
+<button id="backToTop">↑</button>
+
+<!-- Footer -->
+<footer>
+    <p>© 2026 MyStore. All rights reserved.</p>
+</footer>
+
+       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="nav-auth.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

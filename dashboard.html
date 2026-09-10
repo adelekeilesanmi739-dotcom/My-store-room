@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | MyStore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="sidebar-logo">MyStore</div>
+
+            <nav class="sidebar-nav">
+                <a href="#overview" class="sidebar-link active">📊 Overview</a>
+                <a href="#business" class="sidebar-link">🏬 Business Info</a>
+                <a href="#product" class="sidebar-link">📦 Product Type</a>
+                <a href="#products" class="sidebar-link">🛍️ Products</a>
+                <a href="#messages" class="sidebar-link">✉️ Messages <span id="messagesBadge" style="display: none; background: #dc2626; color: white; border-radius: 10px; padding: 1px 7px; font-size: 12px; margin-left: 5px;"></span></a>
+            </nav>
+
+                       <div class="sidebar-footer">
+                <p id="userEmail" class="sidebar-email"></p>
+                <a href="settings.html" class="sidebar-link">⚙️ Account Settings</a>
+                <a href="index.html" class="sidebar-link">← Back to Home</a>
+                <button id="logoutButton" class="sidebar-logout">Log Out</button>
+            </div>
+
+        </aside>
+
+        <!-- Main content -->
+        <main class="dashboard-main">
+
+            <section id="overview" class="dashboard-card">
+                <h2>Welcome!</h2>
+                <p id="dashboardMessage" class="section-description">
+                    Here's a quick overview of your store setup.
+                </p>
+                                <p id="overviewBusinessName"><strong>Business:</strong> <span>Not set yet</span></p>
+                <p id="overviewProductType"><strong>Selling:</strong> <span>Not set yet</span></p>
+                <p id="overviewStoreLink" style="display: none;"></p>
+            </section>
+
+            <section id="business" class="dashboard-card">
+                <h2>Business Info</h2>
+                <p class="section-description">
+                    Tell us a bit about your business.
+                </p>
+
+                <form id="businessForm">
+                    <input
+                        type="text"
+                        id="businessName"
+                        placeholder="Business Name"
+                    >
+                    <textarea
+                        id="businessDescription"
+                        placeholder="Short description of your business"
+                    ></textarea>
+                    <input
+                        type="text"
+                        id="storeSlug"
+                        placeholder="your-store-url (lowercase, no spaces, dashes only)"
+                    >
+                    <button type="submit">Save</button>
+                </form>
+
+                <p id="businessMessage"></p>
+                <p id="storeLinkPreview"></p>
+            </section>
+
+            <section id="product" class="dashboard-card">
+                <h2>Product Type</h2>
+
+                <!-- Shown only if the user hasn't picked a product type yet -->
+                <div id="productSelection" style="display: none;">
+
+                    <p class="section-description">What do you want to sell?</p>
+
+                    <div class="who-container">
+
+                        <div class="who-card product-type-option" data-type="Physical Product">
+                            <div class="who-icon">📦</div>
+                            <h3>Physical Product</h3>
+                            <p>Sell an item for delivery or pickup.</p>
+                        </div>
+
+                        <div class="who-card product-type-option" data-type="Digital Product">
+                            <div class="who-icon">💾</div>
+                            <h3>Digital Product</h3>
+                            <p>Sell a file, guide, or download.</p>
+                        </div>
+
+                        <div class="who-card product-type-option" data-type="Service">
+                            <div class="who-icon">💼</div>
+                            <h3>Service</h3>
+                            <p>Sell your time or expertise.</p>
+                        </div>
+
+                        <div class="who-card product-type-option" data-type="Appointment">
+                            <div class="who-icon">📅</div>
+                            <h3>Appointment</h3>
+                            <p>Let customers book a date and time.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Shown only after the user has picked a product type -->
+                <div id="currentSelection" style="display: none;">
+                    <p><strong>You're set up to sell: <span id="selectedTypeText"></span></strong></p>
+                    <button id="changeSelectionButton" class="secondary-button">Change</button>
+                </div>
+
+            </section>
+
+            <section id="products" class="dashboard-card">
+                <h2>Products</h2>
+                <p class="section-description">
+                    Add the products or services you sell.
+                </p>
+
+                <form id="productForm">
+                    <input
+                        type="text"
+                        id="productName"
+                        placeholder="Product Name"
+                        required
+                    >
+                    <input
+                        type="number"
+                        id="productPrice"
+                        placeholder="Price"
+                        step="0.01"
+                        min="0"
+                    >
+                    <textarea
+                        id="productDescription"
+                        placeholder="Short description"
+                    ></textarea>
+                    <input
+                        type="file"
+                        id="productImage"
+                        accept="image/*"
+                    >
+                  <button type="submit" id="productSubmitButton">Add Product</button>
+                  <button type="button" id="cancelEditButton" class="secondary-button" style="display: none;">Cancel</button>
+                </form>
+
+                <p id="productMessage"></p>
+
+                <div id="productList"></div>
+            </section>
+                            <div id="productList"></div>
+            </section>
+
+                        <section id="messages" class="dashboard-card">
+                <h2>Messages</h2>
+                <p class="section-description">
+                    Live conversations from your storefront visitors.
+                </p>
+
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+                    <div id="conversationsList" style="min-width: 200px; flex: 1;"></div>
+
+                    <div id="dashboardChatWindow" style="display: none; flex: 2; min-width: 250px;">
+                        <h4 id="chatWithName"></h4>
+                        <div id="dashboardChatMessages" style="max-height: 300px; overflow-y: auto; background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 10px;"></div>
+                        <form id="dashboardChatForm" style="display: flex; gap: 10px;">
+                            <input
+                                type="text"
+                                id="dashboardChatInput"
+                                placeholder="Type a reply..."
+                                required
+                                style="flex: 1;"
+                            >
+                            <button type="submit">Send</button>
+                        </form>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+
+    </div>
+
+    <!-- Supabase library + our connection file -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
