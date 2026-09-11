@@ -57,6 +57,72 @@ async function loadStore() {
     await resumeExistingChatIfAny();
 }
 
+// =========================
+// PRODUCTS
+// =========================
+
+async function loadStoreProducts(ownerId) {
+
+    const { data: products, error } = await supabaseClient
+        .from("products")
+        .select("id, name, price, description")
+        .eq("user_id", ownerId)
+        .order("created_at", { ascending: false });
+
+    const storeProducts = document.getElementById("storeProducts");
+
+    if (error || !products || products.length === 0) {
+        storeProducts.innerHTML = "";
+        return;
+    }
+
+    // Fetch all images for all these products in one query.
+    const productIds = products.map((p) => p.id);
+
+    const { data: allImages } = await supabaseClient
+        .from("product_images")
+        .select("product_id, image_url")
+        .in("product_id", productIds);
+
+    storeProducts.innerHTML = "<h3>Products</h3>";
+
+    products.forEach((product) => {
+
+        const item = document.createElement("div");
+        item.className = "product-item";
+
+        const priceText = product.price !== null
+            ? `$${Number(product.price).toFixed(2)}`
+            : "";
+
+        const images = (allImages || []).filter((img) => img.product_id === product.id);
+
+        const imagesHtml = images.map((img) => `
+            <img src="${img.image_url}" alt="${escapeHtml(product.name)}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin: 5px 5px 0 0; display: inline-block;">
+        `).join("");
+
+        item.innerHTML = `
+            <div class="product-item-info" style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h4>${escapeHtml(product.name)}</h4>
+                        <p>${escapeHtml(product.description || "")}</p>
+                    </div>
+                    <span class="product-item-price">${priceText}</span>
+                </div>
+                <div style="margin-top: 10px;">
+                    ${imagesHtml}
+                </div>
+            </div>
+        `;
+
+        storeProducts.appendChild(item);
+    });
+}
+
+// =========================
+// REVIEWS
+// =========================
 let currentBusinessId = null;
 let currentStoreSlug = null;
 async function loadReviews(businessId) {
