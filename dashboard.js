@@ -17,13 +17,14 @@ async function checkLogin() {
     const userEmail = document.getElementById("userEmail");
     userEmail.textContent = data.session.user.email;
 
-       // Load everything saved about this user.
+    // Load everything saved about this user.
     await loadProfile();
     await loadProducts();
     await loadConversations();
 }
 
 checkLogin();
+
 
 // =========================
 // LOAD PROFILE (product type + business info)
@@ -58,7 +59,7 @@ async function loadProfile() {
     if (data && data.business_description) {
         document.getElementById("businessDescription").value = data.business_description;
     }
-        if (data && data.store_slug) {
+    if (data && data.store_slug) {
         document.getElementById("storeSlug").value = data.store_slug;
         showStoreLinkPreview(data.store_slug);
     }
@@ -70,7 +71,7 @@ async function loadProfile() {
     overviewBusinessName.textContent =
         (data && data.business_name) ? data.business_name : "Not set yet";
 
-        overviewProductType.textContent =
+    overviewProductType.textContent =
         (data && data.product_type) ? data.product_type : "Not set yet";
 
     const overviewStoreLink = document.getElementById("overviewStoreLink");
@@ -82,7 +83,8 @@ async function loadProfile() {
     } else {
         overviewStoreLink.style.display = "none";
     }
-}    
+}
+
 
 // =========================
 // SAVE PRODUCT TYPE (when a card is clicked)
@@ -110,6 +112,7 @@ productOptions.forEach((card) => {
 
 });
 
+
 // =========================
 // "CHANGE" BUTTON (product type)
 // =========================
@@ -121,11 +124,13 @@ changeSelectionButton.addEventListener("click", () => {
     document.getElementById("productSelection").style.display = "block";
 });
 
+
 // =========================
 // SAVE BUSINESS INFO
 // =========================
 
 const businessForm = document.getElementById("businessForm");
+
 // Auto-suggest a store URL slug as the user types a business name,
 // but only if they haven't already typed their own slug.
 const businessNameInput = document.getElementById("businessName");
@@ -146,13 +151,13 @@ businessNameInput.addEventListener("input", () => {
     storeSlugInput.value = suggestion;
 });
 
-
-businessForm.addEventListener("submit", async (e) => {
-
 // If the user manually edits the slug themselves, stop auto-suggesting.
 storeSlugInput.addEventListener("input", () => {
     storeSlugInput.dataset.userEdited = "true";
 });
+
+businessForm.addEventListener("submit", async (e) => {
+
     e.preventDefault();
 
     const businessName = document.getElementById("businessName").value;
@@ -206,6 +211,7 @@ function showStoreLinkPreview(slug) {
     preview.innerHTML = `Your public store link: <a href="${url}" target="_blank">${url}</a>`;
 }
 
+
 // =========================
 // PRODUCTS
 // =========================
@@ -217,7 +223,7 @@ async function loadProducts() {
 
     const { data, error } = await supabaseClient
         .from("products")
-        .select("id, name, price, description, image_url")
+        .select("id, name, price, description")
         .eq("user_id", currentUserId)
         .order("created_at", { ascending: false });
 
@@ -236,6 +242,14 @@ async function loadProducts() {
         return;
     }
 
+    // Fetch all images for all these products in one query.
+    const productIds = data.map((p) => p.id);
+
+    const { data: allImages } = await supabaseClient
+        .from("product_images")
+        .select("id, product_id, image_url")
+        .in("product_id", productIds);
+
     data.forEach((product) => {
 
         const item = document.createElement("div");
@@ -245,9 +259,14 @@ async function loadProducts() {
             ? `$${Number(product.price).toFixed(2)}`
             : "";
 
-        const imageHtml = product.image_url
-            ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}" style="width: 100%; max-width: 300px; height: auto; border-radius: 10px; margin-top: 12px; display: block;">`
-            : "";
+        const images = (allImages || []).filter((img) => img.product_id === product.id);
+
+        const imagesHtml = images.map((img) => `
+            <div style="position: relative; display: inline-block; margin: 5px;">
+                <img src="${img.image_url}" alt="${escapeHtml(product.name)}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; display: block;">
+                <button class="delete-image-button" data-id="${img.id}" style="position: absolute; top: -6px; right: -6px; background: #c0392b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1;">×</button>
+            </div>
+        `).join("");
 
         item.innerHTML = `
             <div class="product-item-info" style="width: 100%;">
@@ -264,7 +283,9 @@ async function loadProducts() {
                         </div>
                     </div>
                 </div>
-                ${imageHtml}
+                <div style="margin-top: 10px;">
+                    ${imagesHtml || "<p style='color: #999; font-size: 13px;'>No images yet</p>"}
+                </div>
             </div>
         `;
 
@@ -284,6 +305,29 @@ async function loadProducts() {
             }
         });
     });
+
+    // Wire up all the individual image delete buttons.
+    document.querySelectorAll(".delete-image-button").forEach((button) => {
+        button.addEventListener("click", async () => {
+            const imageId = button.getAttribute("data-id");
+            await deleteProductImage(imageId);
+        });
+    });
+}
+
+async function deleteProductImage(imageId) {
+
+    const { error } = await supabaseClient
+        .from("product_images")
+        .delete()
+        .eq("id", imageId);
+
+    if (error) {
+        alert("Couldn't delete this image: " + error.message);
+        return;
+    }
+
+    await loadProducts();
 }
 
 // Very small helper to avoid raw user text breaking the page layout.
@@ -309,8 +353,7 @@ function startEditingProduct(productId) {
     document.getElementById("productDescription").value = product.description || "";
     // Note: file inputs can't be pre-filled for security reasons —
     // the existing image stays unless the user chooses a new file.
-
-    productSubmitButton.textContent = "Update Product";
+        productSubmitButton.textContent = "Update Product";
     cancelEditButton.style.display = "inline-block";
 
     document.getElementById("productForm").scrollIntoView({ behavior: "smooth" });
@@ -332,37 +375,10 @@ productForm.addEventListener("submit", async (e) => {
     const name = document.getElementById("productName").value;
     const priceValue = document.getElementById("productPrice").value;
     const description = document.getElementById("productDescription").value;
-    const imageFile = document.getElementById("productImage").files[0];
+    const imageFiles = document.getElementById("productImage").files;
     const productMessage = document.getElementById("productMessage");
 
     const price = priceValue ? parseFloat(priceValue) : null;
-
-    let imageUrl = null;
-
-    if (imageFile) {
-
-        productMessage.textContent = "Uploading image...";
-
-        // Path MUST start with the user's own ID to match our storage policy.
-        const filePath = `${currentUserId}/${Date.now()}-${imageFile.name}`;
-
-        const { error: uploadError } = await supabaseClient
-            .storage
-            .from("product-images")
-            .upload(filePath, imageFile);
-
-        if (uploadError) {
-            productMessage.textContent = "Image upload failed: " + uploadError.message;
-            return;
-        }
-
-        const { data: publicUrlData } = supabaseClient
-            .storage
-            .from("product-images")
-            .getPublicUrl(filePath);
-
-        imageUrl = publicUrlData.publicUrl;
-    }
 
     if (editingProductId) {
 
@@ -374,11 +390,6 @@ productForm.addEventListener("submit", async (e) => {
             description: description
         };
 
-        // Only overwrite the image if the user picked a new one.
-        if (imageUrl) {
-            updateData.image_url = imageUrl;
-        }
-
         const { error } = await supabaseClient
             .from("products")
             .update(updateData)
@@ -389,6 +400,10 @@ productForm.addEventListener("submit", async (e) => {
             return;
         }
 
+        if (imageFiles.length > 0) {
+            await uploadProductImages(editingProductId, imageFiles);
+        }
+
         productMessage.textContent = "Product updated!";
         stopEditingProduct();
         await loadProducts();
@@ -397,19 +412,24 @@ productForm.addEventListener("submit", async (e) => {
 
         productMessage.textContent = "Adding...";
 
-        const { error } = await supabaseClient
+        const { data: newProduct, error } = await supabaseClient
             .from("products")
             .insert({
                 user_id: currentUserId,
                 name: name,
                 price: price,
-                description: description,
-                image_url: imageUrl
-            });
+                description: description
+            })
+            .select()
+            .single();
 
         if (error) {
             productMessage.textContent = "Something went wrong: " + error.message;
             return;
+        }
+
+        if (imageFiles.length > 0) {
+            await uploadProductImages(newProduct.id, imageFiles);
         }
 
         productMessage.textContent = "Product added!";
@@ -417,6 +437,36 @@ productForm.addEventListener("submit", async (e) => {
         await loadProducts();
     }
 });
+
+async function uploadProductImages(productId, files) {
+
+    for (const file of files) {
+
+        const filePath = `${currentUserId}/${Date.now()}-${file.name}`;
+
+        const { error: uploadError } = await supabaseClient
+            .storage
+            .from("product-images")
+            .upload(filePath, file);
+
+        if (uploadError) {
+            console.error("Image upload failed:", uploadError.message);
+            continue;
+        }
+
+        const { data: publicUrlData } = supabaseClient
+            .storage
+            .from("product-images")
+            .getPublicUrl(filePath);
+
+        await supabaseClient
+            .from("product_images")
+            .insert({
+                product_id: productId,
+                image_url: publicUrlData.publicUrl
+            });
+    }
+}
 
 async function deleteProduct(productId) {
 
@@ -442,88 +492,88 @@ async function deleteProduct(productId) {
 // =========================
 // MESSAGES (live chat)
 // =========================
- 
+
 let currentDashboardConversationId = null;
 let dashboardChatChannel = null;
 let myConversationIds = [];
 let badgeChannel = null;
- 
+
 async function loadConversations() {
- 
+
     const { data, error } = await supabaseClient
         .from("conversations")
         .select("id, visitor_name, created_at")
         .eq("business_id", currentUserId)
         .order("created_at", { ascending: false });
- 
+
     const conversationsList = document.getElementById("conversationsList");
     conversationsList.innerHTML = "";
- 
+
     if (error || !data || data.length === 0) {
         conversationsList.innerHTML = "<p>No conversations yet.</p>";
         myConversationIds = [];
         updateUnreadBadge();
         return;
     }
- 
+
     myConversationIds = data.map((c) => c.id);
- 
+
     data.forEach((conversation) => {
- 
+
         const item = document.createElement("div");
         item.className = "who-card";
         item.style.cursor = "pointer";
         item.style.marginBottom = "10px";
- 
+
         const dateText = new Date(conversation.created_at).toLocaleString();
- 
+
         item.innerHTML = `
             <h4 style="margin: 0 0 5px;">${escapeHtml(conversation.visitor_name || "Visitor")}</h4>
             <p style="font-size: 12px; color: #999; margin: 0;">${dateText}</p>
         `;
- 
+
         item.addEventListener("click", () => {
             openDashboardConversation(conversation.id, conversation.visitor_name || "Visitor");
         });
- 
+
         conversationsList.appendChild(item);
     });
- 
+
     await updateUnreadBadge();
     subscribeToBadgeUpdates();
 }
- 
+
 async function updateUnreadBadge() {
- 
+
     const badge = document.getElementById("messagesBadge");
- 
+
     if (myConversationIds.length === 0) {
         badge.style.display = "none";
         return;
     }
- 
+
     const { count, error } = await supabaseClient
         .from("chat_messages")
         .select("id", { count: "exact", head: true })
         .eq("sender_type", "visitor")
         .eq("read", false)
         .in("conversation_id", myConversationIds);
- 
+
     if (error || !count) {
         badge.style.display = "none";
         return;
     }
- 
+
     badge.textContent = count;
     badge.style.display = "inline-block";
 }
- 
+
 function subscribeToBadgeUpdates() {
- 
+
     if (badgeChannel) {
         supabaseClient.removeChannel(badgeChannel);
     }
- 
+
     badgeChannel = supabaseClient
         .channel("badge-updates")
         .on(
@@ -542,30 +592,30 @@ function subscribeToBadgeUpdates() {
         )
         .subscribe();
 }
- 
+
 async function openDashboardConversation(conversationId, visitorName) {
- 
+
     currentDashboardConversationId = conversationId;
- 
+
     document.getElementById("dashboardChatWindow").style.display = "block";
     document.getElementById("chatWithName").textContent = "Chat with " + visitorName;
- 
+
     const chatMessagesDiv = document.getElementById("dashboardChatMessages");
     chatMessagesDiv.innerHTML = "";
- 
+
     // Load the existing message history for this conversation.
     const { data, error } = await supabaseClient
         .from("chat_messages")
         .select("sender_type, content")
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
- 
+
     if (data) {
         data.forEach((msg) => {
             appendDashboardChatMessage(msg.sender_type, msg.content);
         });
     }
- 
+
     // Mark this conversation's visitor messages as read now that we've opened it.
     await supabaseClient
         .from("chat_messages")
@@ -573,14 +623,14 @@ async function openDashboardConversation(conversationId, visitorName) {
         .eq("conversation_id", conversationId)
         .eq("sender_type", "visitor")
         .eq("read", false);
- 
+
     await updateUnreadBadge();
- 
+
     // Unsubscribe from any previous conversation's live updates first.
     if (dashboardChatChannel) {
         supabaseClient.removeChannel(dashboardChatChannel);
     }
- 
+
     dashboardChatChannel = supabaseClient
         .channel(`dashboard-chat-${conversationId}`)
         .on(
@@ -593,7 +643,7 @@ async function openDashboardConversation(conversationId, visitorName) {
             },
             (payload) => {
                 appendDashboardChatMessage(payload.new.sender_type, payload.new.content);
- 
+
                 if (payload.new.sender_type === "visitor" && !payload.new.read) {
                     supabaseClient
                         .from("chat_messages")
@@ -605,37 +655,37 @@ async function openDashboardConversation(conversationId, visitorName) {
         )
         .subscribe();
 }
- 
+
 function appendDashboardChatMessage(senderType, content) {
- 
+
     const chatMessages = document.getElementById("dashboardChatMessages");
     const bubble = document.createElement("div");
- 
+
     const isBusiness = senderType === "business";
- 
+
     bubble.style.textAlign = isBusiness ? "right" : "left";
     bubble.style.margin = "8px 0";
- 
+
     bubble.innerHTML = `
         <span style="display: inline-block; background: ${isBusiness ? "darkblue" : "#e5e7eb"}; color: ${isBusiness ? "white" : "#111"}; padding: 8px 14px; border-radius: 14px; max-width: 80%;">
             ${escapeHtml(content)}
         </span>
     `;
- 
+
     chatMessages.appendChild(bubble);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
- 
+
 document.getElementById("dashboardChatForm").addEventListener("submit", async (e) => {
- 
+
     e.preventDefault();
- 
+
     const input = document.getElementById("dashboardChatInput");
     const content = input.value.trim();
     if (!content || !currentDashboardConversationId) return;
- 
+
     input.value = "";
- 
+
     await supabaseClient
         .from("chat_messages")
         .insert({
@@ -644,6 +694,7 @@ document.getElementById("dashboardChatForm").addEventListener("submit", async (e
             content: content
         });
 });
+
 
 // =========================
 // LOG OUT
