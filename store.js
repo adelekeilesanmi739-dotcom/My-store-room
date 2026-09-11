@@ -198,6 +198,10 @@ document.getElementById("reviewForm").addEventListener("submit", async (e) => {
     document.getElementById("reviewForm").reset();
     await loadReviews(currentBusinessId);
 });
+
+// =========================
+// CHAT
+// =========================
 let currentConversationId = null;
 let chatChannel = null;
 
@@ -330,54 +334,9 @@ function subscribeToChatMessages() {
         .subscribe();
 }
 
-
-async function loadStoreProducts(ownerId) {
-
-    const { data: products, error } = await supabaseClient
-        .from("products")
-        .select("name, price, description, image_url")
-        .eq("user_id", ownerId)
-        .order("created_at", { ascending: false });
-
-    const storeProducts = document.getElementById("storeProducts");
-
-    if (error || !products || products.length === 0) {
-        storeProducts.innerHTML = "";
-        return;
-    }
-
-    storeProducts.innerHTML = "<h3>Products</h3>";
-
-    products.forEach((product) => {
-
-        const item = document.createElement("div");
-        item.className = "product-item";
-
-        const priceText = product.price !== null
-            ? `$${Number(product.price).toFixed(2)}`
-            : "";
-
-        const imageHtml = product.image_url
-            ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}" style="width: 100%; max-width: 300px; height: auto; border-radius: 10px; margin-top: 12px; display: block;">`
-            : "";
-
-        item.innerHTML = `
-            <div class="product-item-info" style="width: 100%;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div>
-                        <h4>${escapeHtml(product.name)}</h4>
-                        <p>${escapeHtml(product.description || "")}</p>
-                    </div>
-                    <span class="product-item-price">${priceText}</span>
-                </div>
-                ${imageHtml}
-            </div>
-        `;
-
-        storeProducts.appendChild(item);
-    });
-}
-
+// =========================
+// SHARED HELPER
+// =========================
 function escapeHtml(text) {
     const div = document.createElement("div");
     div.textContent = text;
