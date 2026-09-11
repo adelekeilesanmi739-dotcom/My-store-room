@@ -48,6 +48,10 @@ async function loadStore() {
     // "Public can view products of published stores" policy).
     await loadStoreProducts(data.id);
 
+        // Load reviews (also public, via our
+    // "Anyone can view reviews of published stores" policy).
+    await loadReviews(data.id);
+
     // Check if this visitor already has an ongoing conversation
     // with this specific business, saved from a previous visit.
     await resumeExistingChatIfAny();
@@ -55,6 +59,79 @@ async function loadStore() {
 
 let currentBusinessId = null;
 let currentStoreSlug = null;
+async function loadReviews(businessId) {
+
+    const { data, error } = await supabaseClient
+        .from("reviews")
+        .select("reviewer_name, rating, comment, created_at")
+        .eq("business_id", businessId)
+        .order("created_at", { ascending: false });
+
+    const reviewsList = document.getElementById("reviewsList");
+    const averageRating = document.getElementById("averageRating");
+
+    reviewsList.innerHTML = "";
+
+    if (error || !data || data.length === 0) {
+        averageRating.textContent = "No reviews yet.";
+        return;
+    }
+
+    const total = data.reduce((sum, r) => sum + r.rating, 0);
+    const average = (total / data.length).toFixed(1);
+    const stars = "★".repeat(Math.round(average)) + "☆".repeat(5 - Math.round(average));
+
+    averageRating.textContent = `${stars} ${average} out of 5 (${data.length} review${data.length === 1 ? "" : "s"})`;
+
+    data.forEach((review) => {
+
+        const item = document.createElement("div");
+        item.className = "product-item";
+
+        const reviewStars = "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
+        const dateText = new Date(review.created_at).toLocaleDateString();
+
+        item.innerHTML = `
+            <div class="product-item-info" style="width: 100%;">
+                <h4>${escapeHtml(review.reviewer_name)} <span style="color: darkblue;">${reviewStars}</span></h4>
+                <p>${escapeHtml(review.comment || "")}</p>
+                <p style="font-size: 12px; color: #999;">${dateText}</p>
+            </div>
+        `;
+
+        reviewsList.appendChild(item);
+    });
+}
+
+document.getElementById("reviewForm").addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const reviewerName = document.getElementById("reviewerName").value;
+    const rating = parseInt(document.getElementById("reviewRating").value);
+    const comment = document.getElementById("reviewComment").value;
+    const reviewFormMessage = document.getElementById("reviewFormMessage");
+
+    reviewFormMessage.textContent = "Submitting...";
+
+    const { error } = await supabaseClient
+        .from("reviews")
+        .insert({
+            business_id: currentBusinessId,
+            reviewer_name: reviewerName,
+            rating: rating,
+            comment: comment
+        });
+
+    if (error) {
+        reviewFormMessage.textContent = "Something went wrong: " + error.message;
+        return;
+    }
+
+    reviewFormMessage.textContent = "Thanks for your review!";
+    document.getElementById("reviewForm").reset();
+    await loadReviews(currentBusinessId);
+});
 let currentConversationId = null;
 let chatChannel = null;
 
