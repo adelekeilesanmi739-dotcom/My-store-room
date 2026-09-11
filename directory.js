@@ -33,7 +33,7 @@ async function loadDirectory(productTypeFilter, searchTerm) {
         return;
     }
 
-    data.forEach((business) => {
+        data.forEach(async (business) => {
 
         const card = document.createElement("div");
         card.className = "who-card";
@@ -43,6 +43,7 @@ async function loadDirectory(productTypeFilter, searchTerm) {
             <p style="color: darkblue; font-weight: bold; font-size: 13px;">
                 ${escapeHtml(business.product_type ? business.product_type.toUpperCase() : "")}
             </p>
+            <p class="directory-rating" style="color: #999; font-size: 13px;">Loading rating...</p>
             <p>${escapeHtml(business.business_description || "")}</p>
             <a href="store.html?store=${business.store_slug}" class="secondary-button" style="display: inline-block; margin-top: 10px;">
                 Visit Store
@@ -50,7 +51,41 @@ async function loadDirectory(productTypeFilter, searchTerm) {
         `;
 
         list.appendChild(card);
+
+        // Fetch this business's rating separately, then fill it in
+        // once it arrives (keeps the main list fast to render).
+        const ratingEl = card.querySelector(".directory-rating");
+        await loadCardRating(business.store_slug, ratingEl);
     });
+}
+
+async function loadCardRating(storeSlug, ratingEl) {
+
+    const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("id")
+        .eq("store_slug", storeSlug)
+        .maybeSingle();
+
+    if (!profile) {
+        ratingEl.textContent = "";
+        return;
+    }
+
+    const { data: reviews } = await supabaseClient
+        .from("reviews")
+        .select("rating")
+        .eq("business_id", profile.id);
+
+    if (!reviews || reviews.length === 0) {
+        ratingEl.textContent = "No reviews yet";
+        return;
+    }
+
+    const average = (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1);
+    const stars = "★".repeat(Math.round(average)) + "☆".repeat(5 - Math.round(average));
+
+    ratingEl.innerHTML = `<span style="color: darkblue;">${stars}</span> ${average} (${reviews.length})`;
 }
 
 function escapeHtml(text) {
