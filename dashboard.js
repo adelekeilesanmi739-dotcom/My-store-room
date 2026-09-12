@@ -21,6 +21,7 @@ async function checkLogin() {
     await loadProfile();
     await loadProducts();
     await loadConversations();
+    await loadOrders();
 }
 
 checkLogin();
@@ -695,7 +696,104 @@ document.getElementById("dashboardChatForm").addEventListener("submit", async (e
         });
 });
 
+// =========================
+// ORDERS
+// =========================
 
+async function loadOrders() {
+
+    const { data, error } = await supabaseClient
+        .from("orders")
+        .select("id, buyer_name, buyer_contact, quantity, notes, status, created_at, products(name)")
+        .eq("business_id", currentUserId)
+        .order("created_at", { ascending: false });
+
+    const ordersList = document.getElementById("ordersList");
+    ordersList.innerHTML = "";
+
+    if (error) {
+        ordersList.textContent = "Couldn't load orders right now.";
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        ordersList.innerHTML = "<p>No orders yet.</p>";
+        return;
+    }
+
+    data.forEach((order) => {
+
+        const item = document.createElement("div");
+        item.className = "product-item";
+
+        const dateText = new Date(order.created_at).toLocaleString();
+        const contactText = order.buyer_contact ? ` &middot; ${escapeHtml(order.buyer_contact)}` : "";
+        const productName = order.products ? order.products.name : "Unknown product";
+
+        item.innerHTML = `
+            <div class="product-item-info" style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h4>${escapeHtml(productName)} &times; ${order.quantity}</h4>
+                        <p><strong>${escapeHtml(order.buyer_name)}</strong>${contactText}</p>
+                        <p>${escapeHtml(order.notes || "")}</p>
+                        <p style="font-size: 12px; color: #999;">${dateText}</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                        <select class="order-status-select" data-id="${order.id}">
+                            <option value="pending" ${order.status === "pending" ? "selected" : ""}>Pending</option>
+                            <option value="confirmed" ${order.status === "confirmed" ? "selected" : ""}>Confirmed</option>
+                            <option value="completed" ${order.status === "completed" ? "selected" : ""}>Completed</option>
+                            <option value="cancelled" ${order.status === "cancelled" ? "selected" : ""}>Cancelled</option>
+                        </select>
+                        <button class="product-delete-button" data-id="${order.id}" data-action="delete-order">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        ordersList.appendChild(item);
+    });
+
+    document.querySelectorAll(".order-status-select").forEach((select) => {
+        select.addEventListener("change", async () => {
+            await updateOrderStatus(select.getAttribute("data-id"), select.value);
+        });
+    });
+
+    document.querySelectorAll('[data-action="delete-order"]').forEach((button) => {
+        button.addEventListener("click", async () => {
+            await deleteOrder(button.getAttribute("data-id"));
+        });
+    });
+}
+
+async function updateOrderStatus(orderId, newStatus) {
+
+    const { error } = await supabaseClient
+        .from("orders")
+        .update({ status: newStatus })
+        .eq("id", orderId);
+
+    if (error) {
+        alert("Couldn't update order status: " + error.message);
+    }
+}
+
+async function deleteOrder(orderId) {
+
+    const { error } = await supabaseClient
+        .from("orders")
+        .delete()
+        .eq("id", orderId);
+
+    if (error) {
+        alert("Couldn't delete this order: " + error.message);
+        return;
+    }
+
+    await loadOrders();
+}
 // =========================
 // LOG OUT
 // =========================
