@@ -53,8 +53,14 @@
                 <p class="section-description">
                     Tell us a bit about your business.
                 </p>
-
+                
                 <form id="businessForm">
+                     <img id="avatarPreview" src="" alt="" style="display: none; width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 10px;">
+                    <input
+                        type="file"
+                        id="avatarInput"
+                        accept="image/*"
+                    >
                     <input
                         type="text"
                         id="businessName"
@@ -64,6 +70,16 @@
                         id="businessDescription"
                         placeholder="Short description of your business"
                     ></textarea>
+                     <input
+                        type="text"
+                        id="contactInfo"
+                        placeholder="Contact (phone or email)"
+                    >
+                    <input
+                        type="text"
+                        id="businessAddress"
+                        placeholder="Business Address"
+                    >
                     <input
                         type="text"
                         id="storeSlug"
