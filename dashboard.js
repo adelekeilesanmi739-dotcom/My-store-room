@@ -174,7 +174,10 @@ businessForm.addEventListener("submit", async (e) => {
 
     const businessName = document.getElementById("businessName").value;
     const businessDescription = document.getElementById("businessDescription").value;
+    const contactInfo = document.getElementById("contactInfo").value;
+    const businessAddress = document.getElementById("businessAddress").value;
     const storeSlug = document.getElementById("storeSlug").value.trim();
+    const avatarFile = document.getElementById("avatarInput").files[0];
     const businessMessage = document.getElementById("businessMessage");
 
     // Validate the slug format: lowercase letters, numbers, and dashes only
@@ -188,14 +191,48 @@ businessForm.addEventListener("submit", async (e) => {
 
     businessMessage.textContent = "Saving...";
 
+    let avatarUrl = null;
+
+    if (avatarFile) {
+
+        const filePath = `${currentUserId}/${Date.now()}-${avatarFile.name}`;
+
+        const { error: uploadError } = await supabaseClient
+            .storage
+            .from("avatars")
+            .upload(filePath, avatarFile);
+
+        if (uploadError) {
+            businessMessage.textContent = "Avatar upload failed: " + uploadError.message;
+            return;
+        }
+
+        const { data: publicUrlData } = supabaseClient
+            .storage
+            .from("avatars")
+            .getPublicUrl(filePath);
+
+        avatarUrl = publicUrlData.publicUrl;
+    }
+
+    const updateData = {
+        id: currentUserId,
+        business_name: businessName,
+        business_description: businessDescription,
+        contact_info: contactInfo || null,
+        business_address: businessAddress || null,
+        store_slug: storeSlug || null
+    };
+
+    if (avatarUrl) {
+        updateData.avatar_url = avatarUrl;
+    }
+
+    console.log("DEBUG - about to save this data:", updateData);
+
     const { error } = await supabaseClient
         .from("profiles")
-        .upsert({
-            id: currentUserId,
-            business_name: businessName,
-            business_description: businessDescription,
-            store_slug: storeSlug || null
-        });
+        .upsert(updateData);
 
     if (error) {
         if (error.code === "23505") {
@@ -215,6 +252,7 @@ businessForm.addEventListener("submit", async (e) => {
 
     await loadProfile();
 });
+
 
 
 function showStoreLinkPreview(slug) {
