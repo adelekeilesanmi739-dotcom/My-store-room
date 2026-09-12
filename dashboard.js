@@ -35,7 +35,7 @@ async function loadProfile() {
 
     const { data, error } = await supabaseClient
         .from("profiles")
-        .select("product_type, business_name, business_description, store_slug")
+        .select("product_type, business_name, business_description, store_slug, avatar_url, contact_info, business_address")
         .eq("id", currentUserId)
         .maybeSingle();
 
@@ -252,8 +252,6 @@ businessForm.addEventListener("submit", async (e) => {
 
     await loadProfile();
 });
-
-
 
 function showStoreLinkPreview(slug) {
     const preview = document.getElementById("storeLinkPreview");
@@ -843,6 +841,7 @@ async function deleteOrder(orderId) {
 
     await loadOrders();
 }
+
 // =========================
 // LOG OUT
 // =========================
