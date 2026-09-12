@@ -101,7 +101,7 @@ async function loadStoreProducts(ownerId) {
             <img src="${img.image_url}" alt="${escapeHtml(product.name)}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin: 5px 5px 0 0; display: inline-block;">
         `).join("");
 
-        item.innerHTML = `
+               item.innerHTML = `
             <div class="product-item-info" style="width: 100%;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
@@ -113,13 +113,85 @@ async function loadStoreProducts(ownerId) {
                 <div style="margin-top: 10px;">
                     ${imagesHtml}
                 </div>
+                <button class="order-this-button" data-product-id="${product.id}" data-product-name="${escapeHtml(product.name)}" style="margin-top: 12px;">
+                    Order This
+                </button>
+                <div class="order-form-container" data-product-id="${product.id}" style="display: none; margin-top: 12px;"></div>
             </div>
         `;
 
         storeProducts.appendChild(item);
     });
+
+    document.querySelectorAll(".order-this-button").forEach((button) => {
+        button.addEventListener("click", () => {
+            toggleOrderForm(button.getAttribute("data-product-id"), button.getAttribute("data-product-name"));
+        });
+    });
 }
 
+function toggleOrderForm(productId, productName) {
+
+    const container = document.querySelector(`.order-form-container[data-product-id="${productId}"]`);
+
+    if (container.style.display === "block") {
+        container.style.display = "none";
+        container.innerHTML = "";
+        return;
+    }
+
+    // Hide any other open order forms first.
+    document.querySelectorAll(".order-form-container").forEach((el) => {
+        el.style.display = "none";
+        el.innerHTML = "";
+    });
+
+    container.style.display = "block";
+    container.innerHTML = `
+        <form class="order-form" data-product-id="${productId}">
+            <input type="text" class="order-buyer-name" placeholder="Your Name" required>
+            <input type="text" class="order-buyer-contact" placeholder="Phone or Email (optional)">
+            <input type="number" class="order-quantity" placeholder="Quantity" min="1" value="1" required>
+            <textarea class="order-notes" placeholder="Any notes for the seller (optional)"></textarea>
+            <button type="submit">Submit Order</button>
+        </form>
+        <p class="order-message"></p>
+    `;
+
+    container.querySelector(".order-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await submitOrder(productId, container);
+    });
+}
+
+async function submitOrder(productId, container) {
+
+    const buyerName = container.querySelector(".order-buyer-name").value;
+    const buyerContact = container.querySelector(".order-buyer-contact").value;
+    const quantity = parseInt(container.querySelector(".order-quantity").value) || 1;
+    const notes = container.querySelector(".order-notes").value;
+    const message = container.querySelector(".order-message");
+
+    message.textContent = "Submitting order...";
+
+    const { error } = await supabaseClient
+        .from("orders")
+        .insert({
+            product_id: productId,
+            business_id: currentBusinessId,
+            buyer_name: buyerName,
+            buyer_contact: buyerContact || null,
+            quantity: quantity,
+            notes: notes || null
+        });
+
+    if (error) {
+        message.textContent = "Something went wrong: " + error.message;
+        return;
+    }
+
+    container.innerHTML = "<p style='color: darkblue; font-weight: bold;'>Order submitted! The seller will be in touch.</p>";
+}
 // =========================
 // REVIEWS
 // =========================
