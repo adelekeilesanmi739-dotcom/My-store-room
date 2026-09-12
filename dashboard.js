@@ -64,6 +64,17 @@ async function loadProfile() {
         document.getElementById("storeSlug").value = data.store_slug;
         showStoreLinkPreview(data.store_slug);
     }
+        if (data && data.contact_info) {
+        document.getElementById("contactInfo").value = data.contact_info;
+    }
+    if (data && data.business_address) {
+        document.getElementById("businessAddress").value = data.business_address;
+    }
+    if (data && data.avatar_url) {
+        const avatarPreview = document.getElementById("avatarPreview");
+        avatarPreview.src = data.avatar_url;
+        avatarPreview.style.display = "block";
+    }
 
     // --- Overview section ---
     const overviewBusinessName = document.querySelector("#overviewBusinessName span");
